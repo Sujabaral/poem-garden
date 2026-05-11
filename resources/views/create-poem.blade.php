@@ -36,7 +36,15 @@
 
          <div style="margin-bottom: 15px;">
             <label>Poem Genre</label><br>
-            <input type="text" name="genre" value="{{ old('genre') }}" style="width: 100%; padding: 10px;">
+            <select name="genre" class="form-control">
+                <option value="">Select Genre</option>
+                <option value="Romantic" {{ old('genre') == 'Romantic' ? 'selected' : '' }}>Romantic</option>
+                <option value="Nature" {{ old('genre') == 'Nature' ? 'selected' : '' }}>Nature</option>
+                <option value="Love" {{ old('genre') == 'Love' ? 'selected' : '' }}>Love</option>
+                <option value="Inspirational" {{ old('genre') == 'Inspirational' ? 'selected' : '' }}>Inspirational</option>
+                <option value="Humor" {{ old('genre') == 'Humor' ? 'selected' : '' }}>Humor</option>
+                <option value="Other" {{ old('genre') == 'Other' ? 'selected' : '' }}>Other</option>
+            </select>
         </div>
 
         <div>

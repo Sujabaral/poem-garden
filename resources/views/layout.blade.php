@@ -67,12 +67,13 @@
     <nav>
         <a href="/">Home</a>
         <a href="/about">About</a>
-
         @auth
             <a href="/poems">Poems</a>
             <a href="/poems/create">Create Poem</a>
             <a href="/account">My Account</a>
-
+            <a href="/poems/trash">Trash</a>
+            <a href="/favorites">My Favorites</a>
+            
             <span style="color: white; margin-right: 20px;">
                 Hi, {{ auth()->user()->name }}
             </span>
@@ -94,7 +95,7 @@
     </div>
 
     <footer>
-        Made while learning Laravel
+        Made by Suja
     </footer>
 
 </body>

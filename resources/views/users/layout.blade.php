@@ -6,6 +6,7 @@
         <a href="/poems">Poems</a>
         <a href="/poems/create">Create Poem</a>
         <a href="/account">My Account</a>
+        <a href="/poems/trash">Trash</a>
 
         <span style="color: white; margin-right: 20px;">
             Hi, {{ auth()->user()->name }}

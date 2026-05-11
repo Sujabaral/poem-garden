@@ -17,7 +17,6 @@ class LoginRequest extends FormRequest
             'email' => strtolower(trim($this->email)),
         ]);
     }
-
     public function rules(): array
     {
         return [

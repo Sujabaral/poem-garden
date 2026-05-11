@@ -5,17 +5,45 @@ namespace App\Http\Controllers;
 use App\Http\Requests\PoemRequest;
 use App\Models\Poem;
 use Illuminate\Support\Facades\Storage;
-
+use Illuminate\Http\Request;
 class PoemController extends Controller
 {
     public function index()
-    {
-        $poems = Poem::latest()->get();
+{
+    $search = request('search');
+    $selectedGenre = request('genre');
+    
+    $query = Poem::query();
 
-        return view('poems', [
-            'poems' => $poems
-        ]);
+    // Search filter
+    if ($search) {
+        $query->where(function ($q) use ($search) {
+            $q->where('title', 'like', "%{$search}%")
+              ->orWhere('author', 'like', "%{$search}%")
+              ->orWhere('body', 'like', "%{$search}%");
+        });
     }
+
+    // Genre filter
+    if ($selectedGenre) {
+        $query->where('genre', $selectedGenre);
+    }
+
+    $poems = $query->latest()->get();
+
+    // Get unique genres only
+    $genres = Poem::whereNotNull('genre')
+        ->where('genre', '!=', '')
+        ->distinct()
+        ->pluck('genre');
+
+    return view('poems', [
+        'poems' => $poems,
+        'genres' => $genres,
+        'search' => $search,
+        'selectedGenre' => $selectedGenre,
+    ]);
+}
 
     public function create()
     {
@@ -75,13 +103,67 @@ class PoemController extends Controller
     public function destroy($id)
     {
         $poem = Poem::findOrFail($id);
+        $poem->delete();
+
+        return redirect('/poems');
+    }
+    public function search(PoemRequest $request)
+    {
+        $query = $request->input('query');
+
+        $poems = Poem::where('title', 'like', "%{$query}%")
+            ->orWhere('author', 'like', "%{$query}%")
+            ->orWhere('content', 'like', "%{$query}%")
+            ->get();
+
+        return view('poems', [
+            'poems' => $poems
+        ]);
+    }
+
+    public function trash()
+    {
+        $trashedPoems = Poem::onlyTrashed()->get();
+
+        return view('trash-poems', [
+            'trashedPoems' => $trashedPoems
+        ]);
+    }
+    public function restore(Request $request)   
+    {
+        $id = $request->route('id');
+        $poem = Poem::onlyTrashed()->findOrFail($id);
+        $poem->restore();
+
+        return redirect('/poems/trash')->with('success', 'Poem restored successfully.');
+    }
+
+    public function forceDelete(Request $request)
+    {
+        $id = $request->route('id');
+        $poem = Poem::onlyTrashed()->findOrFail($id);
 
         if ($poem->image) {
             Storage::disk('public')->delete($poem->image);
         }
 
-        $poem->delete();
+        $poem->forceDelete();
 
-        return redirect('/poems');
+        return redirect('/poems/trash')->with('success', 'Poem permanently deleted.');
     }
+
+    public function deleteImage($id)
+{
+    $poem = Poem::findOrFail($id);
+
+    if ($poem->image) {
+        Storage::disk('public')->delete($poem->image);
+        $poem->update([
+            'image' => null
+        ]);
+    }
+
+    return redirect('/poems/' . $poem->id . '/edit')
+        ->with('success', 'Image deleted successfully.');
+}
 }

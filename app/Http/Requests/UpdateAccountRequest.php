@@ -10,7 +10,6 @@ class UpdateAccountRequest extends FormRequest
     {
         return $this->user() !== null;
     }
-
     protected function prepareForValidation(): void
     {
         $this->merge([
@@ -18,7 +17,6 @@ class UpdateAccountRequest extends FormRequest
             'name' => trim($this->name),
         ]);
     }
-
     public function rules(): array
     {
         $userId = $this->user()->id;
@@ -41,13 +39,11 @@ class UpdateAccountRequest extends FormRequest
             ],
         ];
     }
-
     public function messages(): array
     {
         return [
             'name.required' => 'Name is required.',
             'name.min' => 'Name must be at least 2 characters.',
-
             'email.required' => 'Email address is required.',
             'email.email' => 'Please enter a valid email address.',
             'email.unique' => 'This email is already used by another account.',
