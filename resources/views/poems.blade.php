@@ -50,7 +50,7 @@
 
             <a href="/poems/{{ $poem->id }}">Read More|</a>
             
-            <a href="/poems/{{ $poem->idm }}/edit">Edit</a>
+            <a href="/poems/{{ $poem->id }}/edit">Edit</a>
             @auth
                 <form method="POST" action="/poems/{{ $poem->id }}/favorite" style="display:inline;">
                 @csrf

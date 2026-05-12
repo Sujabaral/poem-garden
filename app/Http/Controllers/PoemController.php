@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\PoemAnalyzer;
 use App\Http\Requests\PoemRequest;
 use App\Models\Poem;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
+use App\Services\PoemImageService;
 class PoemController extends Controller
 {
     public function index()
@@ -50,12 +52,14 @@ class PoemController extends Controller
         return view('create-poem');
     }
 
-    public function store(PoemRequest $request)
+    public function store(PoemRequest $request, PoemImageService $imageService)
     {
         $validated = $request->validated();
 
+        $imageService = new PoemImageService();
+
         if ($request->hasFile('image')) {
-            $validated['image'] = $request->file('image')->store('poem-images', 'public');
+            $validated['image'] = $imageService->upload($request);
         }
 
         Poem::create($validated);
@@ -65,11 +69,16 @@ class PoemController extends Controller
 
     public function show($id)
     {
-        $poem = Poem::findOrFail($id);
+    $poem = Poem::findOrFail($id);
 
-        return view('poem-detail', [
-            'poem' => $poem
-        ]);
+    $analyzer = new PoemAnalyzer($poem->body);
+
+    $analysis = $analyzer->analyze();
+
+    return view('poem-detail', [
+        'poem' => $poem,
+        'analysis' => $analysis,
+    ]);
     }
 
     public function edit($id)
@@ -81,7 +90,7 @@ class PoemController extends Controller
         ]);
     }
 
-    public function update(PoemRequest $request, $id)
+    public function update(PoemRequest $request, $id, PoemImageService $imageService)
     {
         $poem = Poem::findOrFail($id);
 
@@ -92,7 +101,8 @@ class PoemController extends Controller
                 Storage::disk('public')->delete($poem->image);
             }
 
-            $validated['image'] = $request->file('image')->store('poem-images', 'public');
+             $validated['image'] = $imageService->replace($request, $poem->image);
+
         }
 
         $poem->update($validated);
@@ -100,9 +110,10 @@ class PoemController extends Controller
         return redirect('/poems/' . $poem->id);
     }
 
-    public function destroy($id)
+    public function destroy($id, PoemImageService $imageService)
     {
         $poem = Poem::findOrFail($id);
+        $imageService->delete($poem->image);
         $poem->delete();
 
         return redirect('/poems');
